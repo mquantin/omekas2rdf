@@ -43,15 +43,15 @@ def createItemsTriples(items, graph):
 	for item in items:
 		try:
 			#The uri
-			uri = URIRef(item["@id"])
+			item_uri = URIRef(item["@id"])
 
 			#The label
-			graph.add( (uri, RDFS.label, Literal(item["o:title"])) )
+			graph.add( (item_uri, RDFS.label, Literal(item["o:title"])) )
 
 			#A resource may be part of several item sets
 			if "o:item_set" in item:
 				for item_set in item["o:item_set"]:
-					graph.add( (uri, O.item_set, URIRef(item_set["@id"].strip())) )
+					graph.add( (item_uri, O.item_set, URIRef(item_set["@id"].strip())) )
 
 			#All properties
 			for key in item:
@@ -65,25 +65,28 @@ def createItemsTriples(items, graph):
 					prefix = key[0:key.index(":")]
 					if prefix not in namespaces:
 						# a non declared namespace,
-						# often an omeka module property (ex: "o-module-mapping:" for map module)
 						# go to next key
-						logging.info(f"prefix {prefix} not found for item {item}")
+						logging.info(f"prefix {prefix} not found for item {item_uri}")
 						continue
 					for element in item[key]:
 						#Omeka returns predicate under the form "prefix:value" (ex. dcterms:subject)
 						#But  RDFlib method needs the full URI to create the RDF node (ex. http://purl.org/dc/terms/subject )
 						#which is part of a triple (prefixes given as keys of json resources)
-
 						if len(prefix) > 0:
 							predicate = URIRef(namespaces[prefix] + key[len(prefix) + 1:])
 							if "@value" in element:
-								graph.add( (uri, predicate, Literal(element["@value"])) )
+								graph.add( (item_uri, predicate, Literal(element["@value"])) )
 
 							if "@id" in element:
 								if element["@id"].strip().startswith("http"):
-									graph.add( (uri, predicate, URIRef(element["@id"].strip())) )
+									graph.add( (item_uri, predicate, URIRef(element["@id"].strip())) )
 								else:
-									graph.add( (uri, predicate, Literal(element["@id"].strip())) )
+									graph.add( (item_uri, predicate, Literal(element["@id"].strip())) )#keep the url as a string for recovering purpose
+									logging.info(f"URI {element['@id'].strip()} doesn't start with http for item {item_uri}")
+								if "o:label" in element:
+									graph.add( (item_uri, predicate, Literal(element["o:label"])) )
+						else: 
+							logging.info(f"preperty {key} has no prefix in item {item_uri}")
 
 
 			# We want to save the type associated with items,
@@ -93,7 +96,7 @@ def createItemsTriples(items, graph):
 					prefix = type[0:type.index(":")]
 					if len(prefix) > 0:
 						object = URIRef(namespaces[prefix] + type[len(prefix) + 1:])
-						graph.add( (uri, RDF.type, object) )
+						graph.add( (item_uri, RDF.type, object) )
 
 		except:
 			logging.exception("An error occured for item with id: " + str(item["@id"]))
@@ -104,26 +107,26 @@ def createMediasTriples(medias, graph):
 		for media in medias:
 			try:
 				#The uri
-				uri = URIRef(media["@id"])
+				media_uri = URIRef(media["@id"])
 
 				#The type
 				if "o-cnt" in media["@type"]:
-					graph.add( (uri, RDF.type, URIRef(O_CNT + media["@type"][6:])))
+					graph.add( (media_uri, RDF.type, URIRef(O_CNT + media["@type"][6:])))
 					if "o-cnt:chars" in media:
-						graph.add( (uri, O_CNT.chars, Literal(media["o-cnt:chars"])) )
+						graph.add( (media_uri, O_CNT.chars, Literal(media["o-cnt:chars"])) )
 				else:
-					graph.add( (uri, RDF.type, O.Media) )
+					graph.add( (media_uri, RDF.type, O.Media) )
 
 				#The label
-				graph.add( (uri, RDFS.label, Literal(media["o:title"])) )
+				graph.add( (media_uri, RDFS.label, Literal(media["o:title"])) )
 
 				#Source (link)
 				if "o:source" in media:
-					graph.add( (uri, O.source, Literal(media["o:source"])) )
+					graph.add( (media_uri, O.source, Literal(media["o:source"])) )
 
 				#The related item
 				if "o:item" in media:
-					graph.add( (uri, O.item, URIRef(media["o:item"]["@id"])))
+					graph.add( (media_uri, O.item, URIRef(media["o:item"]["@id"])))
 
 
 			except:
@@ -136,10 +139,10 @@ def createCollectionsTriples(collections, graph):
 	for set in collections:
 			try:
 				#The uri
-				uri = URIRef(set["@id"])
+				collection_uri = URIRef(set["@id"])
 
 				#The label
-				graph.add( (uri, RDFS.label, Literal(set["o:title"])) )
+				graph.add( (collection_uri, RDFS.label, Literal(set["o:title"])) )
 			except:
 				logging.exception("An error occured for set with id: " + str(set["@id"]))
 				logging.exception("Exception message:", exc_info=True)
