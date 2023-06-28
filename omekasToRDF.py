@@ -14,6 +14,9 @@ from constants import *
 
 
 #TODO check trailing / in API_PATH
+#TODO import omek ID as a value somewhere
+#TODO in case URI, if label (o:label) then get it as a string value for that same property
+
 
 def alterFilesPermissions():
 
@@ -147,25 +150,21 @@ def saveNamespaces():
 # Get Omeka S resource by making REST API calls
 # Save items, medias or collections to RDF base (several files)
 def saveResources(category):
-
     graph = initializeRDFdatabase()
     callOver = False
-    page = 0
+    page = 1#It seems that omeka page 0 and page 1 are the same. Indeed, page 0 is considered as empty value for page information; so it serves default data (page1)
 
     # The call is split into several pages to avoid loosing data
-
     while not callOver:
-
         # Python request package is used to make the HTTP call
         # See https://realpython.com/python-requests/ for examples
-
         logging.info('---- Calling ' + API_PATH + category + " ----")
 
         stringParams = {'page': page, 'per_page': RESULTS_PER_PAGE}
         response = requests.get(API_PATH + category, stringParams)
+        print(API_PATH + category, stringParams)
 
         # Response ok if status code between 200 and 400
-
         if response:
             resources = response.json()
 
