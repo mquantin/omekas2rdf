@@ -2,7 +2,7 @@
 *.DS_Store
 files/*
 backup/*
-
+constants.py
 
 
 
