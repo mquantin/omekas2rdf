@@ -162,27 +162,30 @@ def saveResources(category):
 
         stringParams = {'page': page, 'per_page': RESULTS_PER_PAGE}
         response = requests.get(API_PATH + category, stringParams)
-        print(API_PATH + category, stringParams)
+        # print(API_PATH + category, stringParams)
 
         # Response ok if status code between 200 and 400
         if response:
             resources = response.json()
-
+            print(API_PATH + category, stringParams)
+            print('\tfound in page:', str(len(resources)))
             if len(resources) > 0:
                 logging.info('Page number ' + str(page) + ' with '
                              + str(len(resources)) + ' resources.')
-                page += 1
-
                 if category == ITEMS:
                     createItemsTriples(resources, graph)
                 elif category == MEDIAS:
                     createMediasTriples(resources, graph)
-                else:
+                elif category == COLLECTIONS:
                     createCollectionsTriples(resources, graph)
-            else:
+                else: 
+                    logging.info('Could not handle the category of data to save: '+ str(category) + '.')
+            if len(resources) < RESULTS_PER_PAGE :
                 callOver = True
                 logging.info('No further data to fetch. Call is over for '
                               + str(category) + '.')
+            else: 
+                page += 1
         else:
             logging.error('An error has occured. Response code: '
                           + str(response.status_code))
