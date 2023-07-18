@@ -21,9 +21,11 @@ ITEMS_FILE = "items.ttl"
 MEDIAS_FILE = "medias.ttl"
 COLLECTIONS_FILE = "collections.ttl"
 
-#Prefixes which will store prefixes with RDF namespaces by calling Omeka S vocabularies API
-namespaces = {}
 
 #Omeka related namespaces (added for quick access)
 O = Namespace("http://omeka.org/s/vocabs/o#")
 O_CNT = Namespace("http://www.w3.org/2011/content#")
+FOAF = Namespace("http://xmlns.com/foaf/0.1/")
+
+#Prefixes which will store prefixes with RDF namespaces by calling Omeka S vocabularies API
+namespaces = {"foaf": FOAF}

@@ -61,6 +61,11 @@ def createItemsTriples(items, graph):
 				# or "o-module-mapping:marker")
 				#if only retrieve (isinstance(item[key], list) and
 				#in other cases a Warning strange prefix is logged
+
+
+
+
+
 				if ":" in key and not (key.startswith("o:") or key.startswith("o-module")):
 					prefix = key[0:key.index(":")]
 					if prefix not in namespaces:
@@ -87,6 +92,32 @@ def createItemsTriples(items, graph):
 									graph.add( (item_uri, predicate, Literal(element["o:label"])) )
 						else: 
 							logging.info(f"preperty {key} has no prefix in item {item_uri}")
+
+				elif ":" in key and key.startswith("o:media"):
+
+					for media in item[key]:
+
+						urlMedia = media["@id"]
+						response = requests.get(urlMedia)
+
+						if not response:
+							continue
+
+						resources = response.json()
+
+						if not("o:original_url" in resources):
+							continue
+
+						urlPicture = resources["o:original_url"]
+						key = "foaf:depiction"
+						prefix = "foaf"
+						predicate = URIRef(namespaces[prefix] + key[len(prefix) + 1:])
+						graph.add( (item_uri, predicate, URIRef(urlPicture)))
+
+
+
+
+
 
 
 			# We want to save the type associated with items,
