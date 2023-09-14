@@ -92,34 +92,22 @@ def createItemsTriples(items, graph):
 									graph.add( (item_uri, predicate, Literal(element["o:label"])) )
 						else: 
 							logging.info(f"preperty {key} has no prefix in item {item_uri}")
-
+## a voir si cette partie suivante conservée car elle est redondante avec la fonction createMediasTriples
 				elif ":" in key and key.startswith("o:media"):
-
 					for media in item[key]:
-
 						urlMedia = media["@id"]
 						response = requests.get(urlMedia)
-
 						if not response:
 							continue
-
 						resources = response.json()
-
 						if not("o:original_url" in resources):
+							logging.info("no url for media resource of item n°"+ str(item["@id"]))
 							continue
-
 						urlPicture = resources["o:original_url"]
 						key = "foaf:depiction"
 						prefix = "foaf"
 						predicate = URIRef(namespaces[prefix] + key[len(prefix) + 1:])
 						graph.add( (item_uri, predicate, URIRef(urlPicture)))
-
-
-
-
-
-
-
 			# We want to save the type associated with items,
 			# but not saving that every item is an Omeka item (o:item)
 			for type in item["@type"]:
@@ -128,7 +116,6 @@ def createItemsTriples(items, graph):
 					if len(prefix) > 0:
 						object = URIRef(namespaces[prefix] + type[len(prefix) + 1:])
 						graph.add( (item_uri, RDF.type, object) )
-
 		except:
 			logging.exception("An error occured for item with id: " + str(item["@id"]))
 			logging.exception("Exception message:", exc_info=True)
